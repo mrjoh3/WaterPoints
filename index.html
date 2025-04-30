@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Leaflet Routing Machine Example</title>
+
+    <link rel="stylesheet" href="route/leaflet-routing-machine.css" />
+    <style>
+        #map {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="map"></div>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+    <script src="route/leaflet-routing-machine.js"></script>
+
+    <script>
+        
+        let currentLoc = {};
+
+        var map = L.map('map');
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var waterPoints = [{
+            "type": "Feature",
+            "properties": {
+                "name": "Kinglake Road",
+                "show_on_map": true
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [145.338, -37.5544] // coords are reversed to lon lat when defining geojson
+            }
+        }, {
+            "type": "Feature",
+            "properties": {
+                "name": "Battery Dam",
+                "show_on_map": true
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [145.27257202, -37.61938703]
+            }
+        }];
+
+        var geojsonMarkerOptions = {
+            radius: 8,
+            fillColor: "#ff7800",
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        };
+
+        map.locate({setView: true, maxZoom: 16});
+
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+            currentLoc = e.latlng;
+
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("You are within " + radius + " meters from this point" + e.latlng).openPopup();
+
+            L.circle(e.latlng, radius).addTo(map);
+        }
+        function onLocationError(e) {
+            alert(e.message);
+        }
+
+        map.on('locationerror', onLocationError);
+        map.on('locationfound', onLocationFound);
+
+        function getRoute(e) {
+            console.log(e);
+            console.log(currentLoc);
+            if (Object.keys(currentLoc).length === 0 ) {
+              console.log('no location found');
+            } else {
+                L.Routing.control({
+                    waypoints: [
+                        currentLoc,
+                        e.latlng
+                    ],
+                    routeWhileDragging: true
+                }).addTo(map);
+            }
+        };
+
+        L.geoJSON(waterPoints, {
+            filter: function(feature, layer) {
+                return feature.properties.show_on_map;
+            }
+        }).addTo(map).on('click', getRoute);
+
+        console.log(waterPoints)
+
+
+
+
+    </script>
+</body>
+</html>
