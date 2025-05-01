@@ -27,44 +27,19 @@
 
     <script>
         
+        // url for google maps https://www.google.com.au/maps/dir/-37.5777122,145.2914997 need to figure out how to open in maps app
+        // speed up marker load times?? https://github.com/robertleeplummerjr/Leaflet.glify
+
         let currentLoc = {};
 
         var map = L.map('map');
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     attribution: '© OpenStreetMap contributors'
+        // }).addTo(map);
+        var vicmap = L.tileLayer.wms('https://base.maps.vic.gov.au/service?', {
+            layers: 'CARTO_VG'
         }).addTo(map);
-
-        // var waterPoints = [{
-        //     "type": "Feature",
-        //     "properties": {
-        //         "name": "Kinglake Road",
-        //         "show_on_map": true
-        //     },
-        //     "geometry": {
-        //         "type": "Point",
-        //         "coordinates": [145.338, -37.5544] // coords are reversed to lon lat when defining geojson
-        //     }
-        // }, {
-        //     "type": "Feature",
-        //     "properties": {
-        //         "name": "Battery Dam",
-        //         "show_on_map": true
-        //     },
-        //     "geometry": {
-        //         "type": "Point",
-        //         "coordinates": [145.27257202, -37.61938703]
-        //     }
-        // }];
-
-        // L.geoJSON(waterPoints, {
-        //     filter: function(feature, layer) {
-        //         return feature.properties.show_on_map;
-        //     }
-        // }).addTo(map).on('click', getRoute);
-
-        // console.log(waterPoints)
-
 
 
         map.locate({setView: true, maxZoom: 16});
@@ -74,7 +49,7 @@
             currentLoc = e.latlng;
 
             L.marker(e.latlng).addTo(map)
-                .bindPopup("You are within " + radius + " meters from this point" + e.latlng).openPopup();
+                .bindPopup("You are within " + radius + " meters from this point - " + e.latlng).openPopup();
 
             L.circle(e.latlng, radius).addTo(map);
         }
