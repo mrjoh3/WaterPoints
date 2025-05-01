@@ -72,6 +72,8 @@
                 .bindPopup("You are within " + radius + " meters from this point - " + e.latlng).openPopup();
 
             L.circle(e.latlng, radius).addTo(map);
+            
+            addGeoJson();
         }
         function onLocationError(e) {
             alert(e.message);
@@ -131,7 +133,7 @@
             });
         }
 
-        var pal = {
+        const pal = {
             "Dam": "#900c3f",
             "Tank": "#182b55",
             "Fire Water Tank": "#5f4e94",
@@ -144,21 +146,20 @@
         
         async function addGeoJson() {
             const response = await fetch("gis/waterpoints2.geojson");
-            const data = await response.json();
+            let data = await response.json();
             
-            const loc = await currentLoc; // mostly not waiting long enough
+            //console.log(currentLoc);
             
-            console.log(loc);
-            
-            if (Object.keys(loc).length > 0 ) {
+            if (Object.keys(currentLoc).length > 0 ) {
               var pts = turf.featureCollection(data);
-              console.log(pts);
-              var searchWithin = turf.circle([loc.lng, loc.lat], 5, {steps: 10, units: "kilometers"}) // circle is not in correct location
-              L.geojson(searchWithin).addTo(map);
-              console.log(searchWithin);
-              var ptsWithin = turf.pointsWithinPolygon(pts, searchWithin);
-              console.log(ptsWithin);
-              alert("TESTING: filter found");
+              //console.log(pts);
+              var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], 25, {steps: 10, units: "kilometers"}) // circle is not in correct location
+              //L.geoJson(searchWithin).addTo(map);
+              //console.log(searchWithin);
+              var ptsWithin = turf.pointsWithinPolygon(data, searchWithin);
+              //console.log(ptsWithin);
+              //alert("TESTING: filter found");
+              data = ptsWithin;
             }
             
             
@@ -177,7 +178,7 @@
             }).addTo(map);
         }
 
-        addGeoJson();
+        
         
     </script>
 </body>
