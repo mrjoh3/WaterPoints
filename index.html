@@ -5,12 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Water Point Routing</title>
 
+    <script src="turf/turf.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="route/leaflet-routing-machine.css" />
     <style>
         #map {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 98%;
+            height: 98%;
+        }
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+
+        }
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
         }
     </style>
 
@@ -28,7 +42,13 @@
     <script>
         
         // url for google maps https://www.google.com.au/maps/dir/-37.5777122,145.2914997 need to figure out how to open in maps app
+        //                     http://maps.google.com/maps?saddr=START_ADD&amp;daddr=DEST_ADD&amp;ll=START_ADD
         // speed up marker load times?? https://github.com/robertleeplummerjr/Leaflet.glify
+        // TODO: explore different icons for WP types
+        // TODO: add WP as layers for each type
+        // TODO: add popup of WP details on click (can we do 1 click for info double click for route?)
+        // TODO: indicate access and volume details
+        // https://convertico.com/
 
         let currentLoc = {};
 
@@ -60,34 +80,8 @@
         map.on('locationerror', onLocationError);
         map.on('locationfound', onLocationFound);
 
-        var pal = {
-            "Dam": "#900c3f",
-            "Tank": "#182b55",
-            "Fire Water Tank": "#5f4e94",
-            "Hydrant": "#a291c7",
-            "Suction Point": "#82cbec",
-            "Hydrant BP": "#d94f21",
-            "Water Course": "#febd2b",
-            "Portable Pump": "#9aab4b"
-        };
-        async function addGeoJson() {
-            const response = await fetch("gis/waterpoints.geojson");
-            const data = await response.json();
-            L.geoJson(data, {
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, {
-                        radius: 8,
-                        fillColor: pal[ feature.properties.sub_type ],
-                        color: "#000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    });
-                }
-            }).addTo(map).on('click', getRoute);
-        }
 
-        addGeoJson();
+        
 
         function getRoute(e) {
             console.log(e);
@@ -105,11 +99,86 @@
             }
         };
 
+        var info = L.control({position: 'bottomleft'});
+
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+            this.update();
+            return this._div;
+        };
+        
+        // method that we will use to update the control based on feature properties passed
+        info.update = function (props) {
+            this._div.innerHTML = '<h4>Water Point Details</h4>' +  (props ?
+                '<b>' + props.sub_type + '</b> ' + " " + props.maxvolume + 'L' + "<br />" + props.location
+                : 'Click for details');
+        };
+        
+        info.addTo(map);
 
 
+        function addInfo(e) {
+            var layer = e.target;
+            info.update(layer.feature.properties)
+        }
 
+        function onEachFeature(feature, layer) {
+            layer.on({
+                //mouseover: highlightFeature,
+                //mouseout: resetHighlight,
+                click: addInfo,
+                dblclick: getRoute
+            });
+        }
 
+        var pal = {
+            "Dam": "#900c3f",
+            "Tank": "#182b55",
+            "Fire Water Tank": "#5f4e94",
+            "Hydrant": "#a291c7",
+            "Suction Point": "#82cbec",
+            "Hydrant BP": "#d94f21",
+            "Water Course": "#febd2b",
+            "Portable Pump": "#9aab4b"
+        };
+        
+        async function addGeoJson() {
+            const response = await fetch("gis/waterpoints2.geojson");
+            const data = await response.json();
+            
+            const loc = await currentLoc; // mostly not waiting long enough
+            
+            console.log(loc);
+            
+            if (Object.keys(loc).length > 0 ) {
+              var pts = turf.featureCollection(data);
+              console.log(pts);
+              var searchWithin = turf.circle([loc.lng, loc.lat], 5, {steps: 10, units: "kilometers"}) // circle is not in correct location
+              L.geojson(searchWithin).addTo(map);
+              console.log(searchWithin);
+              var ptsWithin = turf.pointsWithinPolygon(pts, searchWithin);
+              console.log(ptsWithin);
+              alert("TESTING: filter found");
+            }
+            
+            
+            L.geoJson(data, {
+                onEachFeature: onEachFeature,
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 8,
+                        fillColor: pal[ feature.properties.sub_type ],
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                }
+            }).addTo(map);
+        }
 
+        addGeoJson();
+        
     </script>
 </body>
 </html>
