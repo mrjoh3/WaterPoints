@@ -51,6 +51,7 @@
         // https://www.liedman.net/leaflet-routing-machine/tutorials/basic-usage/
 
         let currentLoc = {};
+        const buff_km = 25; // buffer radius in KM
 
         var map = L.map('map');
 
@@ -64,16 +65,18 @@
 
         map.locate({setView: true, maxZoom: 16});
 
-        function onLocationFound(e) {
+        async function onLocationFound(e) {
             var radius = e.accuracy;
             currentLoc = e.latlng;
 
+            let wp_n = await addGeoJson();
+            
             L.marker(e.latlng).addTo(map)
-                .bindPopup("You are within " + radius + " meters from this point - " + e.latlng).openPopup();
+                .bindPopup("You are within " + radius + " meters from this point: <br />" + e.latlng + "<br /> There are " + wp_n + ' water points within ' + buff_km + "km").openPopup();
 
             L.circle(e.latlng, radius).addTo(map);
             
-            addGeoJson();
+            
         }
         function onLocationError(e) {
             alert(e.message);
@@ -148,16 +151,11 @@
             const response = await fetch("gis/waterpoints2.geojson");
             let data = await response.json();
             
-            //console.log(currentLoc);
-            
             if (Object.keys(currentLoc).length > 0 ) {
               var pts = turf.featureCollection(data);
-              //console.log(pts);
-              var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], 25, {steps: 10, units: "kilometers"}) // circle is not in correct location
+              var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], buff_km, {steps: 10, units: "kilometers"}) // circle is not in correct location
               //L.geoJson(searchWithin).addTo(map);
-              //console.log(searchWithin);
               var ptsWithin = turf.pointsWithinPolygon(data, searchWithin);
-              //console.log(ptsWithin);
               //alert("TESTING: filter found");
               data = ptsWithin;
             }
@@ -176,6 +174,8 @@
                     });
                 }
             }).addTo(map);
+            
+            return data.features.length
         }
 
         
