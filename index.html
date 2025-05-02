@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Water Point Routing</title>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+      
     <script src="turf/turf.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="route/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+      
+    <link rel="stylesheet" href="bm/leaflet-beautify-marker-icon.css">
+    <script src="bm/leaflet-beautify-marker-icon.js"></script>
     <style>
         #map {
             position: absolute;
@@ -31,12 +44,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""></script>
+
     <script src="route/leaflet-routing-machine.js"></script>
 
     <script>
@@ -146,6 +154,16 @@
             "Water Course": "#febd2b",
             "Portable Pump": "#9aab4b"
         };
+        const mark = {
+            "Dam": "fire",
+            "Tank": "database",
+            "Fire Water Tank": "database",
+            "Hydrant": "truck",
+            "Suction Point": "plug",
+            "Hydrant BP": "plug",
+            "Water Course": "leaf",
+            "Portable Pump": "bath"
+        };
         
         async function addGeoJson() {
             const response = await fetch("gis/waterpoints2.geojson");
@@ -164,19 +182,22 @@
             L.geoJson(data, {
                 onEachFeature: onEachFeature,
                 pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, {
-                        radius: 8,
-                        fillColor: pal[ feature.properties.sub_type ],
-                        color: "#000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    });
+        return L.marker(latlng, {
+          icon: L.BeautifyIcon.icon({
+            icon: mark[ feature.properties.sub_type ],
+            //iconShape: 'doughnut',
+            textColor: pal[ feature.properties.sub_type ],
+            borderColor: pal[ feature.properties.sub_type ],
+            //backgroundColor: "white",
+            innerIconStyle: 'font-size:11px;padding-top:1px;'
+          })
+        })
                 }
             }).addTo(map);
             
             return data.features.length
         }
+
 
         
         
