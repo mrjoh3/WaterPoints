@@ -63,9 +63,6 @@
 
         var map = L.map('map');
 
-        // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //     attribution: '© OpenStreetMap contributors'
-        // }).addTo(map);
         var vicmap = L.tileLayer.wms('https://base.maps.vic.gov.au/service?', {
             layers: 'CARTO_VG'
         }).addTo(map);
@@ -164,6 +161,16 @@
             "Water Course": "leaf",
             "Portable Pump": "bath"
         };
+        const text = {
+            "Dam": "D",
+            "Tank": "T",
+            "Fire Water Tank": "T",
+            "Hydrant": "H",
+            "Suction Point": "S",
+            "Hydrant BP": "H",
+            "Water Course": "W",
+            "Portable Pump": "P"
+        };
         
         async function addGeoJson() {
             const response = await fetch("gis/waterpoints2.geojson");
@@ -171,10 +178,9 @@
             
             if (Object.keys(currentLoc).length > 0 ) {
               var pts = turf.featureCollection(data);
-              var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], buff_km, {steps: 10, units: "kilometers"}) // circle is not in correct location
+              var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], buff_km, {steps: 10, units: "kilometers"}) 
               //L.geoJson(searchWithin).addTo(map);
               var ptsWithin = turf.pointsWithinPolygon(data, searchWithin);
-              //alert("TESTING: filter found");
               data = ptsWithin;
             }
             
@@ -184,11 +190,11 @@
                 pointToLayer: function (feature, latlng) {
         return L.marker(latlng, {
           icon: L.BeautifyIcon.icon({
-            icon: mark[ feature.properties.sub_type ],
-            //iconShape: 'doughnut',
+            //icon: mark[ feature.properties.sub_type ],
+            isAlphaNumericIcon: true,
+            text: text[ feature.properties.sub_type ]
             textColor: pal[ feature.properties.sub_type ],
             borderColor: pal[ feature.properties.sub_type ],
-            //backgroundColor: "white",
             innerIconStyle: 'font-size:11px;padding-top:1px;'
           })
         })
