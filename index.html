@@ -74,17 +74,22 @@
             var radius = e.accuracy;
             currentLoc = e.latlng;
 
-            let wp_n = await addGeoJson();
+            let wp = await addGeoJson();
             
             L.marker(e.latlng).addTo(map)
-                .bindPopup("You are within " + radius + " meters from this point: <br />" + e.latlng + "<br /> There are " + wp_n + ' water points within ' + buff_km + "km").openPopup();
+                .bindPopup("You are within " + Math.round(radius) + " meters from this point: <br />" + e.latlng + "<br /> There are " + wp.n + ' water points within ' + buff_km + "km").openPopup();
 
             L.circle(e.latlng, radius).addTo(map);
             
             
         }
-        function onLocationError(e) {
+        async function onLocationError(e) {
             alert(e.message);
+            let wp = await addGeoJson(); //should add all markers
+            map.fitBounds([
+              [wp.bb[1], wp.bb[0]],
+              [wp.bb[3], wp.bb[2]]
+            ])
         }
 
         map.on('locationerror', onLocationError);
@@ -120,7 +125,7 @@
         // method that we will use to update the control based on feature properties passed
         info.update = function (props) {
             this._div.innerHTML = '<h4>Water Point Details</h4>' +  (props ?
-                '<b>' + props.sub_type + '</b> ' + " " + props.maxvolume + 'L' + "<br />" + props.location
+                '<b>' + props.sub_type + '</b> ' + " " + (props.maxvolume === 0 ? '': props.maxvolume + 'L') + "<br />" + props.location
                 : 'Click for details');
         };
         
@@ -184,26 +189,30 @@
               data = ptsWithin;
             }
             
+            var bbox = turf.bbox(data);
+            console.log(bbox)
             
             L.geoJson(data, {
                 onEachFeature: onEachFeature,
                 pointToLayer: function (feature, latlng) {
-        return L.marker(latlng, {
-          icon: L.BeautifyIcon.icon({
-            //icon: mark[ feature.properties.sub_type ],
-            isAlphaNumericIcon: true,
-            text: text[ feature.properties.sub_type ],
-            textColor: pal[ feature.properties.sub_type ],
-            borderColor: pal[ feature.properties.sub_type ],
-            innerIconStyle: 'font-size:11px;padding-bottom:1px;margin-top:0px;'
-
-          })
-        })
+                  return L.marker(latlng, {
+                    icon: L.BeautifyIcon.icon({
+                      //icon: mark[ feature.properties.sub_type ],
+                      isAlphaNumericIcon: true,
+                      text: text[ feature.properties.sub_type ],
+                      textColor: pal[ feature.properties.sub_type ],
+                      borderColor: pal[ feature.properties.sub_type ],
+                      innerIconStyle: 'font-size:11px;padding-bottom:1px;margin-top:0px;'
+                    })
+                  })
                 }
             }).addTo(map);
             
-            return data.features.length
-        }
+            return {
+              n: data.features.length,
+              bb: bbox
+            }
+        };
 
 
         
