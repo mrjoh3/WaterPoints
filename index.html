@@ -67,7 +67,7 @@
             layers: 'CARTO_VG'
         }).addTo(map);
 
-
+        
         map.locate({setView: true, maxZoom: 16});
 
         async function onLocationFound(e) {
@@ -178,8 +178,10 @@
         };
         
         async function addGeoJson() {
-            const response = await fetch("gis/waterpoints.geojson");
+            const layersByType = {};
+            const response = await fetch("gis/waterpoints3.geojson");
             let data = await response.json();
+            //console.log(data.features[0].properties);
             
             if (Object.keys(currentLoc).length > 0 ) {
               var pts = turf.featureCollection(data);
@@ -190,29 +192,63 @@
             }
             
             var bbox = turf.bbox(data);
-            console.log(bbox)
+            console.log(data)
             
-            L.geoJson(data, {
+            //L.geoJson(data, {
+            //    onEachFeature: onEachFeature,
+            //    pointToLayer: function (feature, latlng) {
+            //      return L.marker(latlng, {
+            //        icon: L.BeautifyIcon.icon({
+            //          //icon: mark[ feature.properties.sub_type ],
+            //          isAlphaNumericIcon: true,
+            //          text: text[ feature.properties.sub_type ],
+            //          textColor: pal[ feature.properties.sub_type ],
+            //          borderColor: pal[ feature.properties.sub_type ],
+            //          innerIconStyle: 'font-size:11px;padding-bottom:1px;margin-top:0px;'
+            //        })
+            //      })
+            //    }
+            //}).addTo(map);
+            
+            // Define the types you expect
+            const types = ["Dam", "Tank", "Hydrant", "Other"];
+            
+            // Split the features by type
+            types.forEach(type => {
+              const filtered = {
+                type: "FeatureCollection",
+                features: data.features.filter(f => f.properties.group_type === type)
+              };
+              console.log(filtered);
+              // Create a layer for this type
+              layersByType[type] = L.geoJson(filtered, {
                 onEachFeature: onEachFeature,
                 pointToLayer: function (feature, latlng) {
                   return L.marker(latlng, {
                     icon: L.BeautifyIcon.icon({
-                      //icon: mark[ feature.properties.sub_type ],
                       isAlphaNumericIcon: true,
-                      text: text[ feature.properties.sub_type ],
-                      textColor: pal[ feature.properties.sub_type ],
-                      borderColor: pal[ feature.properties.sub_type ],
+                      text: text[feature.properties.sub_type],
+                      textColor: pal[feature.properties.sub_type],
+                      borderColor: pal[feature.properties.sub_type],
                       innerIconStyle: 'font-size:11px;padding-bottom:1px;margin-top:0px;'
                     })
-                  })
+                  });
                 }
-            }).addTo(map);
+              });
+              
+              // Optionally add to map initially
+              layersByType[type].addTo(map);
+            });
+            
+            L.control.layers(null, layersByType).addTo(map);
             
             return {
               n: data.features.length,
               bb: bbox
             }
         };
+
+
 
 
         
