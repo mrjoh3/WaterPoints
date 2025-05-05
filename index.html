@@ -192,7 +192,7 @@
             }
             
             var bbox = turf.bbox(data);
-            console.log(data)
+            //console.log(data)
             
             //L.geoJson(data, {
             //    onEachFeature: onEachFeature,
@@ -211,7 +211,7 @@
             //}).addTo(map);
             
             // Define the types you expect
-            const types = ["Dam", "Tank", "Hydrant", "Other"];
+            const types = ["Tank", "Hydrant", "Dam", "Other"];
             
             // Split the features by type
             types.forEach(type => {
@@ -219,7 +219,7 @@
                 type: "FeatureCollection",
                 features: data.features.filter(f => f.properties.group_type === type)
               };
-              console.log(filtered);
+              //console.log(filtered);
               // Create a layer for this type
               layersByType[type] = L.geoJson(filtered, {
                 onEachFeature: onEachFeature,
