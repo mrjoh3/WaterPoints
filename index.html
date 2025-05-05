@@ -178,7 +178,7 @@
         };
         
         async function addGeoJson() {
-            const response = await fetch("gis/waterpoints2.geojson");
+            const response = await fetch("gis/waterpoints.geojson");
             let data = await response.json();
             
             if (Object.keys(currentLoc).length > 0 ) {
