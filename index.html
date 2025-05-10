@@ -143,36 +143,35 @@
         //        dblclick: getRoute
         //    });
         //}
-        function onEachFeature(feature, layer) {
-          let pressTimer;
-        
-          // Normal click (single tap/click)
-          layer.on('click', addInfo);
-        
-          //if ('ontouchstart' in window) {
-            // Long-press logic
-            layer.on('touchstart', function (e) {
-              // Start timer
-              pressTimer = setTimeout(() => {
-                console.log("long click");
-                getRoute(e); // Trigger your double-click logic here
-                
-              }, 600); // 600ms = long press
-            });
-          
-            layer.on('touchend', function (e) {
-              clearTimeout(pressTimer); // Cancel if touch ends before time
-            });
-          
-            // Optional: clear timer if touch leaves the marker
-            //layer.on('touchcancel', function (e) {
-            //  clearTimeout(pressTimer);
-            //});
-            //} else {
-              // Desktop – use dblclick
-              //layer.on('dblclick', getRoute);
-            //}
-        }
+function onEachFeature(feature, layer) {
+  let pressTimer;
+  let longPressTriggered = false;
+
+  // Regular click
+  layer.on('click', function (e) {
+    if (!longPressTriggered) {
+      addInfo(e); // Only run if not a long press
+    }
+  });
+
+  const start = (e) => {
+    longPressTriggered = false;
+    pressTimer = setTimeout(() => {
+      longPressTriggered = true;
+      getRoute({ latlng: layer.getLatLng(), feature });
+    }, 600); // long press threshold
+  };
+
+  const cancel = () => {
+    clearTimeout(pressTimer);
+  };
+
+  layer.on('mousedown', start);
+  layer.on('touchstart', start);
+  layer.on('mouseup', cancel);
+  layer.on('touchend', cancel);
+  layer.on('mouseout', cancel);
+}
 
         const pal = {
             "Dam": "#900c3f",
