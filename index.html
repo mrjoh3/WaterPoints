@@ -45,6 +45,18 @@
 <body>
     <div id="map"></div>
 
+    <!-- Modal structure -->
+    <div id="map-modal" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:white; border:2px solid #444; z-index:1001; overflow:auto; padding:20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+      <h2>How to Use the Map</h2>
+      <p>
+        • Click on markers to view information.<br>
+        • Long-press a marker to start routing.<br>
+        • Use the layer toggle to filter points by type.<br>
+        • Drag the map or zoom to explore different areas.<br>
+        • Click the “?” button (top right) any time for help.
+      </p>
+      <button onclick="document.getElementById('map-modal').style.display='none'">Close</button>
+    </div>
     <script src="route/leaflet-routing-machine.js"></script>
 
     <script>
@@ -59,6 +71,8 @@
         // https://www.liedman.net/leaflet-routing-machine/tutorials/basic-usage/
 
         let currentLoc = {};
+        let selectedMark = {};
+        
         const buff_km = 5; // buffer radius in KM
 
         var map = L.map('map');
@@ -123,7 +137,10 @@
         // method that we will use to update the control based on feature properties passed
         info.update = function (props) {
             this._div.innerHTML = '<h4>Water Point Details</h4>' +  (props ?
-                '<b>' + props.sub_type + '</b> ' + " " + (props.maxvolume === 0 ? '': props.maxvolume + 'L') + "<br />" + props.location
+                '<b>' + props.sub_type + '</b> ' + " " 
+                      + (props.maxvolume === 0 ? '': props.maxvolume + 'L') 
+                      + "<br />" + props.location 
+                      + '<button id="route-btn">Route to Here</button>'
                 : 'Click for details');
         };
         
@@ -131,50 +148,26 @@
 
 
         function addInfo(e) {
-            var layer = e.target;
-            info.update(layer.feature.properties)
+          var layer = e.target;
+          info.update(layer.feature.properties)
+            
+          selectedMark = e;
+          
+          // Add event listener to the new button
+          document.getElementById('route-btn').onclick = function () {
+            getRoute(selectedMark);
+          };
         }
 
-        //function onEachFeature(feature, layer) {
-        //    layer.on({
-        //        //mouseover: highlightFeature,
-        //        //mouseout: resetHighlight,
-        //        click: addInfo,
-        //        dblclick: getRoute
-        //    });
-        //}
-function onEachFeature(feature, layer) {
-  let pressTimer;
-  let longPressTriggered = false;
 
-  // Regular click (still works normally)
-  layer.on('click', function (e) {
-    if (!longPressTriggered) addInfo(e);
-  });
+        function onEachFeature(feature, layer) {
+            layer.on({
+                click: addInfo,
+                dblclick: getRoute
+            });
+        }
 
-  // Attach to the marker's DOM element for touch
-  layer.once('add', function () {
-    const el = layer.getElement?.() || layer._icon;
-    if (!el) return;
 
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      longPressTriggered = false;
-      pressTimer = setTimeout(() => {
-        longPressTriggered = true;
-        getRoute({ latlng: layer.getLatLng(), feature });
-      }, 600);
-    });
-
-    el.addEventListener('touchend', function (e) {
-      clearTimeout(pressTimer);
-    });
-
-    el.addEventListener('touchcancel', function (e) {
-      clearTimeout(pressTimer);
-    });
-  });
-}
 
         const pal = {
             "Dam": "#900c3f",
@@ -186,16 +179,7 @@ function onEachFeature(feature, layer) {
             "Water Course": "#febd2b",
             "Portable Pump": "#9aab4b"
         };
-        const mark = {
-            "Dam": "fire",
-            "Tank": "database",
-            "Fire Water Tank": "database",
-            "Hydrant": "truck",
-            "Suction Point": "plug",
-            "Hydrant BP": "plug",
-            "Water Course": "leaf",
-            "Portable Pump": "bath"
-        };
+
         const text = {
             "Dam": "D",
             "Tank": "T",
@@ -222,23 +206,7 @@ function onEachFeature(feature, layer) {
             }
             
             var bbox = turf.bbox(data);
-            //console.log(data)
-            
-            //L.geoJson(data, {
-            //    onEachFeature: onEachFeature,
-            //    pointToLayer: function (feature, latlng) {
-            //      return L.marker(latlng, {
-            //        icon: L.BeautifyIcon.icon({
-            //          //icon: mark[ feature.properties.sub_type ],
-            //          isAlphaNumericIcon: true,
-            //          text: text[ feature.properties.sub_type ],
-            //          textColor: pal[ feature.properties.sub_type ],
-            //          borderColor: pal[ feature.properties.sub_type ],
-            //          innerIconStyle: 'font-size:11px;padding-bottom:1px;margin-top:0px;'
-            //        })
-            //      })
-            //    }
-            //}).addTo(map);
+
             
             // Define the types you expect
             const types = ["Tank", "Hydrant", "Dam", "Other"];
@@ -279,9 +247,31 @@ function onEachFeature(feature, layer) {
         };
 
 
-
-
+        const InfoControl = L.Control.extend({
+          onAdd: function (map) {
+            const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control');
+            btn.innerHTML = '?';
+            btn.title = 'Map Instructions';
+            btn.style.width = '30px';
+            btn.style.height = '30px';
         
+            // Prevent map clicks when interacting with the button
+            L.DomEvent.disableClickPropagation(btn);
+        
+            btn.onclick = function () {
+              document.getElementById('map-modal').style.display = 'block';
+            };
+        
+            return btn;
+          }
+        });
+        
+        map.addControl(new InfoControl({ position: 'topright' }));
+
+                  // Add event listener to the new button
+          document.getElementById('route-btn').onclick = function () {
+            getRoute(selectedMark);
+          };
         
     </script>
 </body>
