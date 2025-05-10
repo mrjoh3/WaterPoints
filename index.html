@@ -147,29 +147,35 @@ function onEachFeature(feature, layer) {
   let pressTimer;
   let longPressTriggered = false;
 
-  // Regular click
-  layer.on('click', function (e) {
-    if (!longPressTriggered) {
-      addInfo(e); // Only run if not a long press
-    }
-  });
-
   const start = (e) => {
+    e.originalEvent?.preventDefault();           // prevent native long-press menu
+    L.DomEvent.stopPropagation(e);               // prevent bubbling to map
     longPressTriggered = false;
+
     pressTimer = setTimeout(() => {
       longPressTriggered = true;
+      alert("long press");
       getRoute({ latlng: layer.getLatLng(), feature });
-    }, 600); // long press threshold
+    }, 600);
   };
 
   const cancel = () => {
     clearTimeout(pressTimer);
   };
 
-  layer.on('mousedown', start);
+  layer.on('click', function (e) {
+    if (!longPressTriggered) {
+      addInfo(e); // regular click
+    }
+  });
+
   layer.on('touchstart', start);
-  layer.on('mouseup', cancel);
   layer.on('touchend', cancel);
+  layer.on('touchcancel', cancel);
+
+  // Optional desktop support
+  layer.on('mousedown', start);
+  layer.on('mouseup', cancel);
   layer.on('mouseout', cancel);
 }
 
