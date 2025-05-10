@@ -96,8 +96,6 @@
         map.on('locationfound', onLocationFound);
 
 
-        
-
         function getRoute(e) {
             console.log(e);
             console.log(currentLoc);
@@ -137,13 +135,43 @@
             info.update(layer.feature.properties)
         }
 
+        //function onEachFeature(feature, layer) {
+        //    layer.on({
+        //        //mouseover: highlightFeature,
+        //        //mouseout: resetHighlight,
+        //        click: addInfo,
+        //        dblclick: getRoute
+        //    });
+        //}
         function onEachFeature(feature, layer) {
-            layer.on({
-                //mouseover: highlightFeature,
-                //mouseout: resetHighlight,
-                click: addInfo,
-                dblclick: getRoute
+          let pressTimer;
+        
+          // Normal click (single tap/click)
+          layer.on('click', addInfo);
+        
+          if ('ontouchstart' in window) {
+            // Long-press logic
+            layer.on('touchstart', function (e) {
+              // Start timer
+              pressTimer = setTimeout(() => {
+                console.log("long click");
+                getRoute(e); // Trigger your double-click logic here
+                
+              }, 600); // 600ms = long press
             });
+          
+            layer.on('touchend', function (e) {
+              clearTimeout(pressTimer); // Cancel if touch ends before time
+            });
+          
+            // Optional: clear timer if touch leaves the marker
+            //layer.on('touchcancel', function (e) {
+            //  clearTimeout(pressTimer);
+            //});
+            } else {
+              // Desktop – use dblclick
+              layer.on('dblclick', getRoute);
+            }
         }
 
         const pal = {
