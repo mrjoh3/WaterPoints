@@ -149,7 +149,7 @@
           // Normal click (single tap/click)
           layer.on('click', addInfo);
         
-          if ('ontouchstart' in window) {
+          //if ('ontouchstart' in window) {
             // Long-press logic
             layer.on('touchstart', function (e) {
               // Start timer
@@ -168,10 +168,10 @@
             //layer.on('touchcancel', function (e) {
             //  clearTimeout(pressTimer);
             //});
-            } else {
+            //} else {
               // Desktop – use dblclick
-              layer.on('dblclick', getRoute);
-            }
+              //layer.on('dblclick', getRoute);
+            //}
         }
 
         const pal = {
