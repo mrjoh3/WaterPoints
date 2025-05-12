@@ -39,6 +39,22 @@
             margin: 0 0 5px;
             color: #777;
         }
+        #route-btn {
+          float: right;
+          top: 10px;
+          width: 80px;
+          height: 60px;
+          margin-left: 20px;
+          
+          background-color: #04AA6D; /* Green */
+          border: none;
+          color: white;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 14px;
+          border-radius: 8px;
+        }
     </style>
 
 </head>
@@ -59,7 +75,7 @@
           <li>Drag the map or zoom to explore different areas.</li>
           <li>Click the “?” button (top left) any time for help.</li>
         <ul/>
-      <button onclick="document.getElementById('map-modal').style.display='none'">Close</button>
+      <p><button onclick="document.getElementById('map-modal').style.display='none'">Close</button></p>
     </div>
     <script src="route/leaflet-routing-machine.js"></script>
 
@@ -139,10 +155,10 @@
         // method that we will use to update the control based on feature properties passed
         info.update = function (props) {
             this._div.innerHTML = '<h4>Water Point Details</h4>' +  (props ?
-                '<b>' + props.sub_type + '</b> ' + " " 
+                '<button id="route-btn">Directions</button>' +
+                '<p><b>' + props.sub_type + '</b> ' + " " 
                       + (props.maxvolume === 0 ? '': props.maxvolume + 'L') 
-                      + "<br />" + props.location 
-                      + '<button id="route-btn">Directions</button>'
+                      + "<br />" + props.location + "</p>"
                 : 'Click for details');
         };
         
