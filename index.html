@@ -46,15 +46,19 @@
     <div id="map"></div>
 
     <!-- Modal structure -->
-    <div id="map-modal" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:white; border:2px solid #444; z-index:1001; overflow:auto; padding:20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-      <h2>How to Use the Map</h2>
+    <div id="map-modal" style="display:none; position:fixed; top:10%; left:10%; width:60%; height:60%; background:white; border:2px solid #444; z-index:1001; overflow:auto; padding:20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 12px;">
+      <h2>Water Point Finder</h2>
       <p>
-        • Click on markers to view information.<br>
-        • Long-press a marker to start routing.<br>
-        • Use the layer toggle to filter points by type.<br>
-        • Drag the map or zoom to explore different areas.<br>
-        • Click the “?” button (top right) any time for help.
+        Welcome to the local Water Point (WP) finder. This website uses your device location to identify an assist navigation to the nearest WP.
+        For this to work you need to allow location access. Once your location is found all WP's within 5km will be shown on the map. If your location is unavailable all Nillumbik WP's will be shown.
       </p>
+        <ul>
+          <li>Click on markers to view detailed information</li>
+          <li>Click on the "Directions" button (or double-click a marker) to get detailed driving directions.</li>
+          <li>Use the layer toggle to filter Water Points by type.</li>
+          <li>Drag the map or zoom to explore different areas.</li>
+          <li>Click the “?” button (top left) any time for help.</li>
+        <ul/>
       <button onclick="document.getElementById('map-modal').style.display='none'">Close</button>
     </div>
     <script src="route/leaflet-routing-machine.js"></script>
@@ -64,8 +68,6 @@
         // url for google maps https://www.google.com.au/maps/dir/-37.5777122,145.2914997 need to figure out how to open in maps app
         //                     http://maps.google.com/maps?saddr=START_ADD&amp;daddr=DEST_ADD&amp;ll=START_ADD
         // speed up marker load times?? https://github.com/robertleeplummerjr/Leaflet.glify
-        // TODO: explore different icons for WP types
-        // TODO: add WP as layers for each type
         // TODO: indicate access details
         // https://convertico.com/
         // https://www.liedman.net/leaflet-routing-machine/tutorials/basic-usage/
@@ -140,7 +142,7 @@
                 '<b>' + props.sub_type + '</b> ' + " " 
                       + (props.maxvolume === 0 ? '': props.maxvolume + 'L') 
                       + "<br />" + props.location 
-                      + '<button id="route-btn">Route to Here</button>'
+                      + '<button id="route-btn">Directions</button>'
                 : 'Click for details');
         };
         
@@ -266,7 +268,7 @@
           }
         });
         
-        map.addControl(new InfoControl({ position: 'topright' }));
+        map.addControl(new InfoControl({ position: 'topleft' }));
 
                   // Add event listener to the new button
           document.getElementById('route-btn').onclick = function () {
