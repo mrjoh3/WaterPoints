@@ -265,12 +265,18 @@
             let data = await response.json();
             //console.log(data.features[0].properties);
             
+            let wpn = 0; // only update if there are WP within the buffer
+            
             if (Object.keys(currentLoc).length > 0 ) {
               var pts = turf.featureCollection(data);
               var searchWithin = turf.circle([currentLoc.lng, currentLoc.lat], buff_km, {steps: 10, units: "kilometers"}) 
               //L.geoJson(searchWithin).addTo(map);
               var ptsWithin = turf.pointsWithinPolygon(data, searchWithin);
-              data = ptsWithin;
+              //console.log(ptsWithin);
+              if (ptsWithin.features.length > 0 ){
+                data = ptsWithin;
+                wpn = data.features.length;
+              }
             }
             
             var bbox = turf.bbox(data);
@@ -309,7 +315,7 @@
             L.control.layers(null, layersByType).addTo(map);
             
             return {
-              n: data.features.length,
+              n: wpn,
               bb: bbox
             }
         };
