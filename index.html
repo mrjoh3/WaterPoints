@@ -191,6 +191,10 @@
             if (Object.keys(currentLoc).length === 0 ) {
               console.log('no location found');
             } else {
+              
+                  // Temporarily disable click handler
+                  map.off('click', setCurrentLocation);
+    
                 L.Routing.control({
                     waypoints: [
                         currentLoc,
@@ -198,6 +202,11 @@
                     ],
                     routeWhileDragging: true
                 }).addTo(map);
+                
+                    // Re-enable click handler after a short delay
+                setTimeout(() => {
+                    map.on('click', setCurrentLocation);
+                }, 100); // adjust time as needed
             }
         };
 
