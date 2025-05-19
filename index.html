@@ -118,6 +118,7 @@
       </p>
       <p>
         <ul>
+          <li>Click on the map to set the starting point for directions</li>
           <li>Click on markers to view detailed information</li>
           <li>Click on the "Directions" button (or double-click a marker) to get detailed driving directions.</li>
           <li>Use the layer toggle to filter Water Points by type.</li>
@@ -173,9 +174,15 @@
               [wp.bb[3], wp.bb[2]]
             ])
         }
+        
+        function setCurrentLocation(e){
+          var newMarker = new L.marker(e.latlng).addTo(map);
+          currentLoc = e.latlng;
+        }
 
         map.on('locationerror', onLocationError);
         map.on('locationfound', onLocationFound);
+        map.on('click', setCurrentLocation);
 
 
         function getRoute(e) {
