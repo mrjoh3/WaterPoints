@@ -146,8 +146,12 @@
 
         var map = L.map('map');
 
-        var vicmap = L.tileLayer.wms('https://base.maps.vic.gov.au/service?', {
-            layers: 'CARTO_VG'
+        //var vicmap = L.tileLayer.wms('https://base.maps.vic.gov.au/service?', {
+        //    layers: 'CARTO_VG'
+        //}).addTo(map);
+        
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         
