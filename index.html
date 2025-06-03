@@ -340,7 +340,7 @@
               layersByType[type].addTo(map);
             });
             
-            L.control.layers(null, layersByType).addTo(map);
+            L.control.layers({"VicMap": vicmap, "Aerial": vicmap_aerial}, layersByType).addTo(map);
             
             return {
               n: wpn,
